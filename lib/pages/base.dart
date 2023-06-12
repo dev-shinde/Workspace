@@ -8,6 +8,7 @@ import 'package:workspace/pages/incomplete_task.dart';
 import 'package:workspace/pages/calender.dart';
 import 'package:workspace/pages/shared_workspace.dart';
 import 'package:workspace/pages/MyWorkspacePage.dart';
+import 'package:workspace/pages/profile_page.dart';
 
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -21,6 +22,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  DateTime getStartOfDay(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  DateTime getEndOfDay(DateTime date) {
+    return DateTime(date.year, date.month, date.day, 23, 59, 59);
+  }
+
 
   void _onTodoChanged() {
     setState(() {}); // Refresh the UI of HomePage
@@ -200,12 +210,19 @@ class _HomePageState extends State<HomePage> {
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               child: StreamBuilder<QuerySnapshot>(
-                                stream: ref.snapshots(),
+                                stream: ref.where('date', isGreaterThanOrEqualTo: getStartOfDay(DateTime.now()), isLessThan: getEndOfDay(DateTime.now())).snapshots(),
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
                                     List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
                                     int totalItems = documents.length;
-                                    int checkedItems = documents.where((doc) => doc['checked'] == true).length;
+                                    int checkedItems = 0;
+
+                                    for (var document in documents) {
+                                      if ((document.data() as Map<String, dynamic>)['checked'] == true) {
+                                        checkedItems++;
+                                      }
+                                    }
+
                                     double completionPercentage = totalItems > 0 ? (checkedItems / totalItems) * 100 : 0;
 
                                     return Row(
@@ -260,8 +277,10 @@ class _HomePageState extends State<HomePage> {
                                     );
                                   }
                                 },
-                              ),
+                              )
+
                             ),
+
                           ],
                         ),
                         SizedBox(width: 15),
@@ -471,58 +490,100 @@ class _HomePageState extends State<HomePage> {
                                 future: ref.get(),
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
+                                    List<QueryDocumentSnapshot> documents = snapshot.data!.docs.reversed.toList();
+
+                                    // Sort the documents based on priority
+                                    documents.sort((a, b) {
+                                      bool priorityA = a['priority'] ?? false;
+                                      bool priorityB = b['priority'] ?? false;
+                                      if (priorityA && !priorityB) {
+                                        return -1; // a has higher priority than b
+                                      } else if (!priorityA && priorityB) {
+                                        return 1; // b has higher priority than a
+                                      } else {
+                                        return 0; // both have same priority
+                                      }
+                                    });
+
                                     return ListView.builder(
                                       shrinkWrap: true,
                                       physics: ScrollPhysics(),
                                       padding: EdgeInsets.zero,
-                                      itemCount: snapshot.data?.docs.length ?? 0,
+                                      itemCount: documents.length,
                                       itemBuilder: (context, index) {
-                                        Color bg = Colors.grey;
-                                        QueryDocumentSnapshot<Object?> document = snapshot.data!.docs.reversed.toList()[index] as QueryDocumentSnapshot<Object?>;
+                                        QueryDocumentSnapshot document = documents[index];
                                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
-                                        return Padding(
-                                          padding: EdgeInsets.only(bottom: 8.0),
-                                          child: Card(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            color: bg,
-                                            child: ListTile(
-                                              leading: Checkbox(
-                                                value: data['checked'] ?? false,
-                                                onChanged: (value) {
-                                                  // Update the 'checked' field in Firestore
-                                                  document.reference.update({'checked': value}).then((value) {
-                                                    print("Calling Set State");
-                                                    setState(() {});
-                                                  });
-                                                },
-                                                activeColor: Colors.black, // Set the checkbox color to black
+                                        Timestamp? timestamp = data['date'] as Timestamp?;
+                                        DateTime? todoDate = timestamp?.toDate();
+                                        // Check if the date is today's date
+                                        bool isToday = todoDate != null &&
+                                            todoDate.year == DateTime.now().year &&
+                                            todoDate.month == DateTime.now().month &&
+                                            todoDate.day == DateTime.now().day;
+
+                                        if (isToday) {
+                                          Color bg = Colors.blueAccent;
+                                          if (data['priority'] == true) {
+                                            bg = Colors.greenAccent;
+                                          }
+
+                                          return Padding(
+                                            padding: EdgeInsets.only(bottom: 8.0),
+                                            child: Card(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(20),
                                               ),
-                                              title: Text(
-                                                "${data['todo'] ?? 'No todo'}",
-                                                style: TextStyle(
-                                                  fontSize: 24.0,
-                                                  fontFamily: "lato",
-                                                  fontWeight: FontWeight.bold,
-                                                  color: data['checked'] ?? false ? Colors.black38 : Colors.black,
-                                                  decoration: data['checked'] ?? false ? TextDecoration.lineThrough : null,
+                                              color: bg,
+                                              child: ListTile(
+                                                leading: Checkbox(
+                                                  value: data['checked'] ?? false,
+                                                  onChanged: (value) {
+                                                    // Update the 'checked' field in Firestore
+                                                    document.reference.update({'checked': value}).then((value) {
+                                                      print("Calling Set State");
+                                                      setState(() {});
+                                                    });
+                                                  },
+                                                  activeColor: Colors.black, // Set the checkbox color to black
+                                                ),
+                                                title: Row(
+                                                  children: [
+                                                    if (data['priority'] == true)
+                                                      CircleAvatar(
+                                                        child: Text('P'),
+                                                      ), // Show the "P" icon for high priority tasks
+                                                    SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        "${data['todo'] ?? 'No todo'}",
+                                                        style: TextStyle(
+                                                          fontSize: 24.0,
+                                                          fontFamily: "lato",
+                                                          fontWeight: FontWeight.bold,
+                                                          color: data['checked'] ?? false ? Colors.black38 : Colors.black,
+                                                          decoration: data['checked'] ?? false ? TextDecoration.lineThrough : null,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                trailing: IconButton(
+                                                  icon: Icon(Icons.delete, color: Colors.red),
+                                                  onPressed: () {
+                                                    // Delete the document from Firestore
+                                                    document.reference.delete().then((value) {
+                                                      print("Calling Set State");
+                                                      setState(() {});
+                                                    });
+                                                  },
                                                 ),
                                               ),
-                                              trailing: IconButton(
-                                                icon: Icon(Icons.delete, color: Colors.red),
-                                                onPressed: () {
-                                                  // Delete the document from Firestore
-                                                  document.reference.delete().then((value) {
-                                                    print("Calling Set State");
-                                                    setState(() {});
-                                                  });
-                                                },
-                                              ),
                                             ),
-                                          ),
-                                        );
+                                          );
+                                        } else {
+                                          return SizedBox.shrink(); // Hide the card if it doesn't match today's date
+                                        }
                                       },
                                     );
                                   } else {
@@ -596,14 +657,16 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Calender()),
+              MaterialPageRoute(builder: (context) => CalendarPage()),
             );          },
         ),
         IconButton(
           icon: Icon(Icons.person),
           onPressed: () {
-            // Handle profile icon button press
-          },
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProfilePage()),
+          );           },
         ),
       ],
     )

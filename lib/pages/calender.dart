@@ -1,98 +1,115 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class Calender extends StatefulWidget {
+class CalendarPage extends StatefulWidget {
+  const CalendarPage({Key? key}) : super(key: key);
+
   @override
-  _CalenderState createState() => _CalenderState();
+  _CalendarPageState createState() => _CalendarPageState();
 }
 
-class _CalenderState extends State<Calender> {
-  DateTime _selectedDate = DateTime.now();
-  late List<Map<String, dynamic>> _todoList;
+class _CalendarPageState extends State<CalendarPage> {
+  late CalendarFormat _calendarFormat;
+  late DateTime _selectedDate;
+  late DateTime _focusedDate;
+  late RangeSelectionMode _rangeSelectionMode;
+  CollectionReference ref = FirebaseFirestore.instance
+      .collection('users')
+      .doc(FirebaseAuth.instance.currentUser?.uid)
+      .collection('todo');
+
+  @override
+  void initState() {
+    super.initState();
+    _calendarFormat = CalendarFormat.month;
+    _selectedDate = DateTime.now();
+    _focusedDate = DateTime.now();
+    _rangeSelectionMode = RangeSelectionMode.toggledOn;
+  }
+
+  void _onDaySelected(DateTime selectedDate, DateTime focusedDate) {
+    setState(() {
+      _selectedDate = selectedDate;
+      _focusedDate = focusedDate;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todo Page'),
+        title: Text(
+          'Calendar',
+          style: TextStyle(
+            fontSize: 25.0,
+            fontFamily: "lato",
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.redAccent,
       ),
       body: Column(
         children: [
-          _buildCalendar(),
-          SizedBox(height: 20),
-          _buildTodoList(),
+          TableCalendar(
+            calendarFormat: _calendarFormat,
+            focusedDay: _focusedDate,
+            firstDay: DateTime.utc(2010, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            startingDayOfWeek: StartingDayOfWeek.monday,
+            calendarStyle: CalendarStyle(
+              selectedDecoration: BoxDecoration(
+                color: Colors.blue[400],
+                shape: BoxShape.circle,
+              ),
+              todayDecoration: BoxDecoration(
+                color: Colors.redAccent,
+                shape: BoxShape.circle,
+              ),
+              weekendTextStyle: TextStyle(color: Colors.redAccent),
+              outsideDaysVisible: false,
+            ),
+            headerStyle: HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+            ),
+            rangeSelectionMode: _rangeSelectionMode,
+            onDaySelected: _onDaySelected,
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: ref.where('date', isEqualTo: Timestamp.fromDate(_selectedDate)).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                    itemCount: snapshot.data?.docs.length,
+                    itemBuilder: (context, index) {
+                      QueryDocumentSnapshot<Object?> document =
+                      snapshot.data!.docs[index]
+                      as QueryDocumentSnapshot<Object?>;
+                      Map<String, dynamic> data =
+                      document.data() as Map<String, dynamic>;
+
+                      return ListTile(
+                        title: Text("${data['todo'] ?? 'No todo'}"),
+                        subtitle: Text(
+                            "${data['date']?.toDate().toString() ?? 'No date'}"),
+                      );
+                    },
+                  );
+                } else {
+                  return Center(
+                    child: Text('No todos for selected date'),
+                  );
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
-  }
-
-  Widget _buildCalendar() {
-    return TableCalendar(
-      firstDay: DateTime(DateTime.now().year - 1),
-      lastDay: DateTime(DateTime.now().year + 1),
-      focusedDay: _selectedDate,
-      selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
-      onDaySelected: (selectedDay, focusedDay) {
-        setState(() {
-          _selectedDate = selectedDay;
-        });
-      },
-      // Add other configuration options for the calendar if needed
-      // ...
-    );
-  }
-
-  Widget _buildTodoList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('todo')
-          .where('date', isEqualTo: _selectedDate)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          _todoList = snapshot.data!.docs.map((doc) => doc.data()).toList().cast<Map<String, dynamic>>();
-          return ListView.builder(
-            itemCount: _todoList.length,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final todo = _todoList[index];
-              final bool isAllChecked = _isAllChecked(todo);
-
-              return Card(
-                color: isAllChecked ? Colors.green : Colors.red,
-                child: ListTile(
-                  leading: Checkbox(
-                    value: todo['checked'],
-                    onChanged: (value) {
-                      setState(() {
-                        todo['checked'] = value;
-                      });
-                      _updateTodoItem(todo);
-                    },
-                  ),
-                  title: Text(todo['title']),
-                  // Add other fields or UI components as needed
-                  // ...
-                ),
-              );
-            },
-          );
-        } else {
-          return CircularProgressIndicator();
-        }
-      },
-    );
-  }
-
-  bool _isAllChecked(Map<String, dynamic> todo) {
-    return _todoList.every((t) => t['checked']);
-  }
-
-  void _updateTodoItem(Map<String, dynamic> todo) {
-    final docRef = FirebaseFirestore.instance
-        .collection('todo')
-        .doc(todo['id'].toString());
-    docRef.update(todo);
   }
 }

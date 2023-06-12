@@ -6,19 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:workspace/pages/add_todo.dart';
 
 class Todo extends StatefulWidget {
-  final Function() onTodoChanged; // Add this line
+  final Function() onTodoChanged;
 
-  const Todo({Key? key, required this.onTodoChanged}) : super(key: key); // Modify the constructor
+  const Todo({Key? key, required this.onTodoChanged}) : super(key: key);
 
   @override
   State<Todo> createState() => _TodoState();
 }
 
 class _TodoState extends State<Todo> {
-
   void _onTodoChanged() {
-    widget.onTodoChanged(); // Call the callback function defined in the HomePage widget
-    setState(() {}); // Refresh the Todo widget's UI
+    widget.onTodoChanged();
+    setState(() {});
   }
 
   CollectionReference ref = FirebaseFirestore.instance
@@ -40,6 +39,9 @@ class _TodoState extends State<Todo> {
 
   @override
   Widget build(BuildContext context) {
+    DateTime currentDate = DateTime.now();
+    DateTime currentDay = DateTime(currentDate.year, currentDate.month, currentDate.day);
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -56,7 +58,6 @@ class _TodoState extends State<Todo> {
         ),
         backgroundColor: Color(0xFFE2B958),
       ),
-
       appBar: AppBar(
         title: Text(
           'Todo',
@@ -69,9 +70,8 @@ class _TodoState extends State<Todo> {
         ),
         backgroundColor: Colors.redAccent,
       ),
-
       body: StreamBuilder<QuerySnapshot>(
-        stream: ref.snapshots(), // Use a stream instead of a future
+        stream: ref.where('date', isEqualTo: currentDay).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
@@ -88,7 +88,7 @@ class _TodoState extends State<Todo> {
                     margin: EdgeInsets.only(top: 20.0),
                     color: bg,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(55.0), // Adjust the value as per your preference
+                      borderRadius: BorderRadius.circular(55.0),
                     ),
                     child: ListTile(
                       leading: Checkbox(

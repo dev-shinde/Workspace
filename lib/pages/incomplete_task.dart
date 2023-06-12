@@ -42,21 +42,6 @@ class _InctodoState extends State<Inctodo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => AddTodo()),
-          ).then((value) {
-            print("Calling Set State");
-            setState(() {});
-          });
-        },
-        child: Icon(
-          Icons.add,
-          color: Colors.white70,
-        ),
-        backgroundColor: Color(0xFFE2B958),
-      ),
       appBar: AppBar(
         title: Text(
           'Your incomplete Task',
@@ -70,7 +55,7 @@ class _InctodoState extends State<Inctodo> {
         backgroundColor: Colors.redAccent,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: ref.snapshots(), // Use a stream instead of a future
+        stream: ref.where('checked', isEqualTo: false).snapshots(), // Use a stream instead of a future, and filter for unchecked tasks
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
@@ -81,66 +66,65 @@ class _InctodoState extends State<Inctodo> {
                 QueryDocumentSnapshot<Object?> document = snapshot.data!.docs.reversed.toList()[index] as QueryDocumentSnapshot<Object?>;
                 Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
-                // Check if the todo's date matches the current date
-                if (data['date'] != null) {
-                  DateTime todoDate = (data['date'] as Timestamp).toDate();
-                  if (todoDate.year == currentDate.year && todoDate.month == currentDate.month && todoDate.day == currentDate.day) {
-                    return Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Card(
-                        margin: EdgeInsets.only(top: 20.0),
-                        color: bg,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(55.0), // Adjust the value as per your preference
-                        ),
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: data['checked'] ?? false,
-                            onChanged: (value) {
-                              document.reference.update({'checked': value}).then((value) {
-                                _onTodoChanged();
-                              });
-                            },
-                            activeColor: Colors.black,
-                          ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${data['todo'] ?? 'No todo'}",
-                                style: TextStyle(
-                                  fontSize: 24.0,
-                                  fontFamily: "lato",
-                                  fontWeight: FontWeight.bold,
-                                  color: data['checked'] ?? false ? Colors.black38 : Colors.black,
-                                  decoration: data['checked'] ?? false ? TextDecoration.lineThrough : null,
-                                ),
-                              ),
-                              if (data['priority'] == true) SizedBox(width: 8.0),
-                              if (data['priority'] == true)
-                                CircleAvatar(
-                                  child: Text('P'),
-                                ),
-                            ],
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete, color: Colors.black),
-                            onPressed: () {
-                              document.reference.delete();
-                              setState(() {});
-                            },
-                          ),
-                        ),
+                return Padding(
+                  padding: const EdgeInsets.all(0.0),
+                  child: Card(
+                    margin: EdgeInsets.only(top: 20.0),
+                    color: bg,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(55.0), // Adjust the value as per your preference
+                    ),
+                    child: ListTile(
+                      leading: Checkbox(
+                        value: data['checked'] ?? false,
+                        onChanged: (value) {
+                          document.reference.update({'checked': value}).then((value) {
+                            _onTodoChanged();
+                          });
+                        },
+                        activeColor: Colors.black,
                       ),
-                    );
-                  } else {
-                    // Return an empty container if the todo's date does not match the current date
-                    return Container();
-                  }
-                } else {
-                  // Return an empty container if the todo's date is not set
-                  return Container();
-                }
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${data['todo'] ?? 'No todo'}",
+                            style: TextStyle(
+                              fontSize: 24.0,
+                              fontFamily: "lato",
+                              fontWeight: FontWeight.bold,
+                              color: data['checked'] ?? false ? Colors.black38 : Colors.black,
+                              decoration: data['checked'] ?? false ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                          if (data['priority'] == true) SizedBox(width: 12.0),
+                          if (data['priority'] == true)
+                            CircleAvatar(
+                              child: Text('P'),
+                            ),
+                          if (data['date'] != null) SizedBox(height: 12.0),
+                          if (data['date'] != null)
+                            Text(
+                              "${(data['date'] as Timestamp).toDate().toString().split(" ")[0]}",
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontFamily: "lato",
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.black),
+                        onPressed: () {
+                          document.reference.delete();
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  ),
+                );
               },
             );
           } else {
