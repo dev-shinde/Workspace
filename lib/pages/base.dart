@@ -703,10 +703,12 @@ class _HomePageState extends State<HomePage> {
           },
         ),
         IconButton(
-          icon: Icon(Icons.search),
+          icon: Icon(Icons.notes),
           onPressed: () {
-            // Handle search icon button press
-          },
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => NotesPage()),
+            );           },
         ),
         IconButton(
           icon: Icon(Icons.task),
@@ -726,14 +728,14 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
-        IconButton(
-          icon: Icon(Icons.calendar_today),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CalendarPage()),
-            );          },
-        ),
+        // IconButton(
+        //   icon: Icon(Icons.calendar_today),
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (context) => CalendarPage()),
+        //     );          },
+        // ),
         IconButton(
           icon: Icon(Icons.person),
           onPressed: () {
