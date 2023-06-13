@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -105,15 +104,90 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      margin: EdgeInsets.only(top: 55),
-                      child: Text(
-                        'Yuhuu, your work \nis almost done !',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 35,
-                        ),
-                      ),
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(FirebaseAuth.instance.currentUser?.uid)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          Map<String, dynamic>? userData =
+                          snapshot.data!.data() as Map<String, dynamic>?;
+
+                          if (userData != null) {
+                            String name = userData['name'];
+                            String greeting = '';
+                            String message = '';
+
+                            // Get the current time
+                            DateTime now = DateTime.now();
+
+                            // Get the start and end of the current day
+                            DateTime startOfDay = DateTime(now.year, now.month, now.day);
+                            DateTime endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+                            // Check if there are any todos for the current day
+                            bool hasTodos = false;
+                            ref
+                                .where('date', isGreaterThanOrEqualTo: startOfDay, isLessThanOrEqualTo: endOfDay)
+                                .get()
+                                .then((querySnapshot) {
+                              hasTodos = querySnapshot.docs.any((doc) => doc['checked'] == true);
+                            });
+
+                            if (now.hour >= 0 && now.hour < 12) {
+                              // Morning
+                              greeting = 'Good Morning';
+                              if (hasTodos) {
+                                message = 'Congratulations, $name! You got a great head start for the day!';
+                              } else {
+                                message = 'Have a productive day ahead, $name!';
+                              }
+                            } else if (now.hour >= 12 && now.hour < 18) {
+                              // Afternoon
+                              greeting = 'Good Afternoon';
+                              if (hasTodos) {
+                                message = 'Congratulations, $name! You\'re making progress!';
+                              } else {
+                                message = "It's never too early nor too late, $name. Just start the work with full enthusiasm!";
+                              }
+                            } else {
+                              // Evening
+                              greeting = 'Good Evening';
+                              if (hasTodos) {
+                                message = 'Congratulations on completing a productive day, $name!';
+                              } else {
+                                message = 'Have a relaxing evening, $name!';
+                              }
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(top: 40),
+                                  child: Text(
+                                    greeting,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 30,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  message,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                        }
+                        return SizedBox.shrink();
+                      },
                     ),
                     SizedBox(height: 20),
                     Row(
