@@ -16,6 +16,7 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
   final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
   StreamSubscription<DocumentSnapshot>? _workspaceSubscription;
+  List<String> _addedEmails = [];
 
   @override
   void initState() {
@@ -43,9 +44,9 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
       if (snapshot.exists) {
         setState(() {
           // Handle the updated workspace data here
-          // For example, you can update the workspaceData variable
           var workspaceData = snapshot.data() as Map<String, dynamic>;
-          // Do something with the updated workspace data
+          // Get the added emails from the workspace document
+          _addedEmails = List<String>.from(workspaceData['emails'] ?? []);
         });
       }
     });
@@ -97,8 +98,9 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
 
         if (currentUserWorkspaceSnapshot.exists) {
           // Check if the current user's workspace is shared
-          bool isShared =
-              (currentUserWorkspaceSnapshot.data() as Map<String, dynamic>)['workspaceType'] == 'shared';
+          bool isShared = (currentUserWorkspaceSnapshot.data()
+          as Map<String, dynamic>)['workspaceType'] ==
+              'shared';
 
           if (isShared) {
             // Merge the current user's workspace data with the added user's workspace data
@@ -106,6 +108,11 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
               currentUserWorkspaceSnapshot.data(),
               SetOptions(merge: true),
             );
+
+            // Add the email to the current user's workspace
+            currentUserWorkspaceRef.update({
+              'emails': FieldValue.arrayUnion([email])
+            });
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -144,6 +151,7 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.redAccent,
         title: Text('Workspace Details'),
       ),
       body: FutureBuilder<DocumentSnapshot>(
@@ -184,6 +192,9 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
                 SizedBox(height: 16),
                 Card(
                   color: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Center(
@@ -201,6 +212,9 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
                 ),
                 SizedBox(height: 16),
                 Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                   color: Colors.green,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -216,40 +230,54 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 25),
                 if (workspaceType == 'shared')
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          'Add User to Workspace',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  Column(
+                    children: [
+                      SizedBox(height: 16),
+                      Text(
+                        'Added Users',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        SizedBox(height: 8),
-                        TextField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(50.0),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-                          ),
+                      ),
+                      SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 4.0,
+                        children: _addedEmails.map((email) {
+                          return Chip(
+                            label: Text(email),
+                          );
+                        }).toList(),
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'Add User to Workspace',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _addUserToWorkspace,
-                          child: _isLoading
-                              ? CircularProgressIndicator()
-                              : Text('Add User'),
+                      ),
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _addUserToWorkspace,
+                        child: _isLoading
+                            ? CircularProgressIndicator()
+                            : Text('Add User'),
+                      ),
+                    ],
                   ),
-                SizedBox(height: 16),
+                SizedBox(height: 25),
               ],
             ),
           );
@@ -258,4 +286,3 @@ class _WorkspaceDetailsPageState extends State<WorkspaceDetailsPage> {
     );
   }
 }
-

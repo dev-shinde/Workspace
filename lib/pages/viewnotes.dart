@@ -62,6 +62,11 @@ class _ViewNoteState extends State<ViewNote> {
                       ),
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(Colors.blueAccent[700]),
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25.0), // Adjust the border radius as desired
+                          ),
+                        ),
                         padding: MaterialStateProperty.all(
                           EdgeInsets.symmetric(horizontal: 15.0, vertical: 1.0),
                         ),
@@ -85,30 +90,63 @@ class _ViewNoteState extends State<ViewNote> {
                   height: 12.0,
                 ),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "${widget.data?['title']}",
+                      'Title',
                       style: TextStyle(
-                        fontSize: 20.0,
-                        fontFamily: "lato",
+                        fontSize: 30.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 350,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "${widget.data?['title']}",
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontFamily: "lato",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                    SizedBox(height: 10.0),
-                    imageUrl != null ? Image.network(imageUrl!) : SizedBox(),
-                    SizedBox(height: 10.0),
+                    SizedBox(height: 30.0),
+                    Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
                     Container(
-                      height: MediaQuery.of(context).size.height * 0.5,
-                      padding: const EdgeInsets.only(top: 15.0),
-                      child: SingleChildScrollView(
+                      width: 350,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Center(
                         child: Text(
                           "${widget.data?['description']}",
                           style: TextStyle(
                             fontSize: 20.0,
                             fontFamily: "lato",
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey,
+                            color: Colors.white,
                           ),
                         ),
                       ),

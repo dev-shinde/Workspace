@@ -35,6 +35,11 @@ class _AddNoteState extends State<AddNote> {
                         Icons.arrow_back_ios_new_outlined,
                       ),
                       style: ButtonStyle(
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.0), // Adjust the border radius as desired
+                            ),
+                          ),
                           backgroundColor: MaterialStateProperty.all(Colors.blueAccent[700],),
                           padding: MaterialStateProperty.all(EdgeInsets.symmetric(
                             horizontal: 15.0, vertical: 1.0,
@@ -42,22 +47,6 @@ class _AddNoteState extends State<AddNote> {
                       ),
                     ),
                     //
-                    ElevatedButton(
-                      onPressed: add,
-                      child: Text(
-                        "Save",
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontFamily: "lato",
-                          color: Colors.white,
-                        ),),
-                      style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Colors.greenAccent[700],),
-                          padding: MaterialStateProperty.all(EdgeInsets.symmetric(
-                            horizontal: 25.0, vertical: 8.0,
-                          ))
-                      ),
-                    ),
                   ],
                 ),
 
@@ -67,42 +56,94 @@ class _AddNoteState extends State<AddNote> {
 
                 Form(child: Column(
                   children: [
-                    TextFormField(
-                      decoration: InputDecoration.collapsed(
-                          hintText: "Enter Your Notes"
+                    Container(
+                      margin: EdgeInsets.only(bottom: 20.0), // Set the desired bottom margin
+                      width: 700, // Set the desired width
+                      height: 40, // Set the desired height
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        fontFamily: "lato", fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                      child: TextFormField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration.collapsed(
+                          hintText: "Enter Title",
+                          hintStyle: TextStyle(
+                            fontSize: 25.0,
+                            fontFamily: "lato",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        style: TextStyle(
+                          fontSize: 25.0,
+                          fontFamily: "lato",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        onChanged: (_val) {
+                          title = _val;
+                        },
                       ),
-                      onChanged: (_val){
-                        title = _val;
-                      },
                     ),
 
                     Container(
-                      height: MediaQuery.of(context).size.height * 0.75,
+                      margin: EdgeInsets.only(bottom: 25.0), // Set the desired bottom margin
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFDF95),
+                        borderRadius: BorderRadius.circular(30.0), // Add the desired border radius
+                      ),
+                      height: MediaQuery.of(context).size.height * 0.4,
                       padding: const EdgeInsets.only(top: 15.0),
                       child: TextFormField(
                         decoration: InputDecoration.collapsed(
-                            hintText: "Enter Description"
+                          hintText: "Enter Description",
+                          hintStyle: TextStyle(
+                            fontSize: 20.0,
+                            fontFamily: "lato",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22.0,
                           fontFamily: "lato",
-                          color: Colors.grey,
+                          color: Colors.black,
                         ),
-                        onChanged: (_val){
+                        onChanged: (_val) {
                           des = _val;
                         },
                         maxLines: 20,
                       ),
-                    ),
 
+                    ),
                   ],
-                ))
+                )),
+
+                ElevatedButton(
+                  onPressed: add,
+                  child: Text(
+                    "Save",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontFamily: "lato",
+                      color: Colors.white,
+                    ),),
+                  style: ButtonStyle(
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.0), // Adjust the border radius as desired
+                        ),
+                      ),
+                      backgroundColor: MaterialStateProperty.all(Colors.greenAccent[700],),
+                      padding: MaterialStateProperty.all(EdgeInsets.symmetric(
+                        horizontal: 25.0, vertical: 10.0,
+                      ))
+                  ),
+                )
               ],
+
             ),
           ),
         ),

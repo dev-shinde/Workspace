@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             Text(
-              '\n Create and manage your  \n  tasks \n',
+              '\n Create and manage your tasks \n',
               style: TextStyle(
                 fontSize: 35.0,
               ),

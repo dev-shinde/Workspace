@@ -44,15 +44,15 @@ class _InctodoState extends State<Inctodo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Your incomplete Task',
+          'Your incomplete Tasks',
           style: TextStyle(
             fontSize: 25.0,
             fontFamily: "lato",
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.lightGreenAccent,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: ref.where('checked', isEqualTo: false).snapshots(), // Use a stream instead of a future, and filter for unchecked tasks
@@ -116,7 +116,7 @@ class _InctodoState extends State<Inctodo> {
                         ],
                       ),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.black),
+                        icon: Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
                           document.reference.delete();
                           setState(() {});

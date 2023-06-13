@@ -15,6 +15,23 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
       .doc(FirebaseAuth.instance.currentUser?.uid)
       .collection('workspace');
 
+  void _deleteWorkspace(String documentId) async {
+    try {
+      await wref.doc(documentId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Workspace deleted successfully.'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting workspace: $e'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +51,16 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
         backgroundColor: Color(0xFFE2B958),
       ),
       appBar: AppBar(
-        title: Text('My Workspace'),
+        backgroundColor: Colors.greenAccent,
+        title: Text(
+          'My Workspace',
+          style: TextStyle(
+            fontSize: 25.0,
+            fontFamily: "lato",
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -98,6 +124,7 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
                               itemBuilder: (context, index) {
                                 String title = sharedWorkspaces[index].data()['title'] ?? 'No title';
                                 String description = sharedWorkspaces[index].data()['description'] ?? '';
+                                String documentId = sharedWorkspaces[index].id;
                                 return Padding(
                                   padding: EdgeInsets.only(left: 16.0), // Add left margin
                                   child: InkWell(
@@ -106,7 +133,7 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => WorkspaceDetailsPage(
-                                            documentId: sharedWorkspaces[index].id,
+                                            documentId: documentId,
                                           ),
                                         ),
                                       );
@@ -125,6 +152,36 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
                                                 color: Colors.white,
                                                 fontSize: 20,
                                               ),
+                                            ),
+                                            trailing: IconButton(
+                                              icon: Icon(Icons.delete),
+                                              color: Colors.white,
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: Text('Delete Workspace'),
+                                                      content: Text('Are you sure you want to delete this workspace?'),
+                                                      actions: [
+                                                        TextButton(
+                                                          child: Text('Cancel'),
+                                                          onPressed: () {
+                                                            Navigator.of(context).pop();
+                                                          },
+                                                        ),
+                                                        TextButton(
+                                                          child: Text('Delete'),
+                                                          onPressed: () {
+                                                            _deleteWorkspace(documentId);
+                                                            Navigator.of(context).pop();
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
                                             ),
                                           ),
                                         ),
@@ -157,6 +214,7 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
                               itemBuilder: (context, index) {
                                 String title = privateWorkspaces[index].data()['title'] ?? 'No title';
                                 String description = privateWorkspaces[index].data()['description'] ?? '';
+                                String documentId = privateWorkspaces[index].id;
                                 return Padding(
                                   padding: EdgeInsets.only(left: 16.0), // Add left margin
                                   child: InkWell(
@@ -165,7 +223,7 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => WorkspaceDetailsPage(
-                                            documentId: privateWorkspaces[index].id,
+                                            documentId: documentId,
                                           ),
                                         ),
                                       );
@@ -184,6 +242,36 @@ class _MyWorkspacePageState extends State<MyWorkspacePage> {
                                                 color: Colors.white,
                                                 fontSize: 20,
                                               ),
+                                            ),
+                                            trailing: IconButton(
+                                              icon: Icon(Icons.delete),
+                                              color: Colors.white,
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: Text('Delete Workspace'),
+                                                      content: Text('Are you sure you want to delete this workspace?'),
+                                                      actions: [
+                                                        TextButton(
+                                                          child: Text('Cancel'),
+                                                          onPressed: () {
+                                                            Navigator.of(context).pop();
+                                                          },
+                                                        ),
+                                                        TextButton(
+                                                          child: Text('Delete'),
+                                                          onPressed: () {
+                                                            _deleteWorkspace(documentId);
+                                                            Navigator.of(context).pop();
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              },
                                             ),
                                           ),
                                         ),

@@ -60,7 +60,7 @@ class _TodoState extends State<Todo> {
       ),
       appBar: AppBar(
         title: Text(
-          'Todo',
+          'Task',
           style: TextStyle(
             fontSize: 25.0,
             fontFamily: "lato",

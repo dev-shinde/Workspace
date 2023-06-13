@@ -46,24 +46,7 @@ class _Shared_WorkspaceState extends State<Shared_Workspace> {
                         ),
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: add,
-                      child: Text(
-                        "Save",
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontFamily: "lato",
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ButtonStyle(
-                        backgroundColor:
-                        MaterialStateProperty.all(Colors.greenAccent[700]),
-                        padding: MaterialStateProperty.all(
-                          EdgeInsets.symmetric(horizontal: 25.0, vertical: 8.0),
-                        ),
-                      ),
-                    ),
+
                   ],
                 ),
                 SizedBox(
@@ -101,7 +84,7 @@ class _Shared_WorkspaceState extends State<Shared_Workspace> {
                       SizedBox(height: 15.0),
                       TextFormField(
                         decoration: InputDecoration.collapsed(
-                          hintText: "Enter Your Title for Workspace",
+                          hintText: "Enter Title",
                         ),
                         style: TextStyle(
                           fontSize: 20.0,
@@ -116,7 +99,7 @@ class _Shared_WorkspaceState extends State<Shared_Workspace> {
                       SizedBox(height: 15.0),
                       TextFormField(
                         decoration: InputDecoration.collapsed(
-                          hintText: "Enter Description for Workspace",
+                          hintText: "Enter Description",
                         ),
                         style: TextStyle(
                           fontSize: 22.0,
@@ -127,6 +110,24 @@ class _Shared_WorkspaceState extends State<Shared_Workspace> {
                           des = _val;
                         },
                         maxLines: 20,
+                      ),
+                      ElevatedButton(
+                        onPressed: add,
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontFamily: "lato",
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor:
+                          MaterialStateProperty.all(Colors.greenAccent[700]),
+                          padding: MaterialStateProperty.all(
+                            EdgeInsets.symmetric(horizontal: 25.0, vertical: 8.0),
+                          ),
+                        ),
                       ),
                     ],
                   ),

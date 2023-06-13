@@ -80,7 +80,7 @@ class _AddTodoState extends State<AddTodo> {
                   children: [
                     TextFormField(
                       decoration: InputDecoration.collapsed(
-                        hintText: "Enter Your todo for today",
+                        hintText: "Enter Your task for today",
                       ),
                       style: TextStyle(
                         fontSize: 20.0,
